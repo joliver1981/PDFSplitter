@@ -64,9 +64,10 @@ def main(arg1, arg2, arg3, arg4):
     deleteSourcePDF = arg4
     targetPDFFile = 'temppdfsplitfile.pdf' # Temporary file
 
-    # Append backslash to output dir if necessary
-    if not outputPDFDir.endswith('\\'):
-        outputPDFDir = outputPDFDir + '\\'
+    if outputPDFDir:
+        # Append backslash to output dir if necessary
+        if not outputPDFDir.endswith('\\'):
+            outputPDFDir = outputPDFDir + '\\'
 
     print('Parameters:')
     print(sourcePDFFile)
@@ -112,20 +113,21 @@ def main(arg1, arg2, arg3, arg4):
                 prevPageNum = newPageNum
                 prevPageName = newPageName
             else:
-                print('Next Page...')
-                pdfWriter = PyPDF2.PdfFileWriter()
-                page_idx = 0 
-                for i in range(prevPageNum, newPageNum):
-                    pdfPage = pdfReader.getPage(i-1)
-                    pdfWriter.insertPage(pdfPage, page_idx)
-                    print('Added page to PDF file: ' + prevPageName + ' - Page #: ' + str(i))
-                    page_idx+=1
-                
-                pdfFileName = outputNamePrefix + str(str(prevPageName).replace(':','_')).replace('*','_') + '.pdf'
-                pdfOutputFile = open(outputPDFDir + pdfFileName, 'wb')
-                pdfWriter.write(pdfOutputFile)
-                pdfOutputFile.close()
-                print('Created PDF file: ' + outputPDFDir + pdfFileName)
+                if newPageName:
+                    print('Next Page...')
+                    pdfWriter = PyPDF2.PdfFileWriter()
+                    page_idx = 0 
+                    for i in range(prevPageNum, newPageNum):
+                        pdfPage = pdfReader.getPage(i-1)
+                        pdfWriter.insertPage(pdfPage, page_idx)
+                        print('Added page to PDF file: ' + prevPageName + ' - Page #: ' + str(i))
+                        page_idx+=1
+
+                    pdfFileName = outputNamePrefix + str(str(prevPageName).replace(':','_')).replace('*','_') + '.pdf'
+                    pdfOutputFile = open(outputPDFDir + pdfFileName, 'wb')
+                    pdfWriter.write(pdfOutputFile)
+                    pdfOutputFile.close()
+                    print('Created PDF file: ' + outputPDFDir + pdfFileName)
 
             i = prevPageNum
             prevPageNum = newPageNum
@@ -152,8 +154,9 @@ def main(arg1, arg2, arg3, arg4):
         # Delete temp file
         os.unlink(targetPDFFile)
 
-        if deleteSourcePDF == True or deleteSourcePDF == "True":
-            os.unlink(sourcePDFFile)
+        if newPageName:
+            if deleteSourcePDF == True or deleteSourcePDF == "True":
+                os.unlink(sourcePDFFile)
 
 if __name__ == "__main__":
     main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
