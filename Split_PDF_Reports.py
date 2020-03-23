@@ -125,10 +125,11 @@ def main(arg1, arg2, arg3, arg4):
                         page_idx+=1
 
                     pdfFileName = outputNamePrefix + str(str(prevPageName).replace(':','_')).replace('*','_') + '.pdf'
-                    pdfOutputFile = open(outputPDFDir + pdfFileName, 'wb')
+                    fullFilePath = os.path.join(outputPDFDir, pdfFileName)
+                    pdfOutputFile = open(fullFilePath, 'wb')
                     pdfWriter.write(pdfOutputFile)
                     pdfOutputFile.close()
-                    print('Created PDF file: ' + outputPDFDir + pdfFileName)
+                    print('Created PDF file: ' + fullFilePath)
 
             i = prevPageNum
             prevPageNum = newPageNum
@@ -145,10 +146,11 @@ def main(arg1, arg2, arg3, arg4):
             page_idx+=1
         
         pdfFileName = outputNamePrefix + str(str(prevPageName).replace(':','_')).replace('*','_') + '.pdf'
-        pdfOutputFile = open(outputPDFDir + pdfFileName, 'wb')
+        fullFilePath = os.path.join(outputPDFDir, pdfFileName)
+        pdfOutputFile = open(fullFilePath, 'wb')
         pdfWriter.write(pdfOutputFile)
         pdfOutputFile.close()
-        print('Created PDF file: ' + outputPDFDir + pdfFileName)
+        print('Created PDF file: ' + fullFilePath)
 
         pdfFileObj2.close()
 
