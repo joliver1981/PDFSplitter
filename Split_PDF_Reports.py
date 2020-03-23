@@ -65,9 +65,10 @@ def main(arg1, arg2, arg3, arg4):
     targetPDFFile = 'temppdfsplitfile.pdf' # Temporary file
 
     if outputPDFDir:
-        # Append backslash to output dir if necessary
-        if not outputPDFDir.endswith('\\'):
-            outputPDFDir = outputPDFDir + '\\'
+        if os.path.exists(outputPDFDir):
+            pass
+        else:
+            os.mkdir(outputPDFDir)
 
     print('Parameters:')
     print(sourcePDFFile)
