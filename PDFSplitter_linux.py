@@ -199,7 +199,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("input", help="input PDF file")
     parser.add_argument("output", nargs="?", help="output directory for the split   files", default="./Output/")
-    parser.add_argument("prefix", nargs="?", help="split files' prefix", default="Split")
+    parser.add_argument("prefix", nargs="?", help="split files' prefix", default="")
     parser.add_argument("delete", nargs="?", help="delete the original file? (True/False)", default=False)
     parser.add_argument("majorBookmarksOnly", nargs="?", help="Only output those chapters without - in the title", default=False)
     args = parser.parse_args()
