@@ -54,7 +54,7 @@ class BookmarkToPageMap(PyPDF2.PdfFileReader):
             result[title] = page_id_to_page_numbers.get(page_idnum, '???')
         return result
 
-def main(arg1, arg2, arg3, arg4):
+def main(arg1, arg2, arg3, arg4, arg5):
     ################
     # Main Program #
     ################
@@ -63,7 +63,12 @@ def main(arg1, arg2, arg3, arg4):
     outputPDFDir = arg2
     outputNamePrefix = arg3
     deleteSourcePDF = arg4
+    majorChaptersOnly = arg5
     targetPDFFile = 'temppdfsplitfile.pdf' # Temporary file
+
+    #make sure output directory has slash at the end otherwise it does not path correctly
+    if outputPDFDir[-1] is not "/":
+        outputPDFDir = outputPDFDir + "/"
 
 #I'm commenting it out, because we're running on Linux.
 #    if outputPDFDir:
@@ -76,6 +81,7 @@ def main(arg1, arg2, arg3, arg4):
     print(outputPDFDir)
     print(outputNamePrefix)
     print(targetPDFFile)
+    print(majorChaptersOnly)
 
     #Verify PDF is ready for splitting
     while not os.path.exists(sourcePDFFile):
@@ -102,7 +108,31 @@ def main(arg1, arg2, arg3, arg4):
         prevPageNum = 0
         newPageName = ''
         prevPageName = ''
-        for p,t in sorted([(v,k) for k,v in pdfFileObj.getDestinationPageNumbers().items()]):
+        all_chapters = pdfFileObj.getDestinationPageNumbers().items()
+
+        if majorChaptersOnly:
+            chapter_list_used = []
+            for c in all_chapters:
+                chapter_title_strip = str(c[0]).strip()
+                should_add_chapter = True
+                for i in range(len(chapter_title_strip)):
+                    # if chapter title is less than 3 characters
+                    if len(chapter_title_strip) < 2:
+                        break
+                    # if reached end
+                    if i > len(chapter_title_strip) - 2:
+                        break
+                    # look for pattern of digit, line or period, digit indicating a sub chapter
+                    if chapter_title_strip[i].isdigit() and (chapter_title_strip[i+1] in [".", "-"]) and chapter_title_strip[i+2].isdigit():
+                        should_add_chapter = False
+                        break
+                if should_add_chapter:
+                    chapter_list_used.append(c)
+                
+        else:
+            chapter_list_used = all_chapters
+
+        for p,t in sorted([(v,k) for k,v in chapter_list_used]):
             template = '%-5s  %s'
             print (template % ('Page', 'Title'))
             print (template % (p+1,t))
@@ -122,13 +152,13 @@ def main(arg1, arg2, arg3, arg4):
                     for i in range(prevPageNum, newPageNum):
                         pdfPage = pdfReader.getPage(i-1)
                         pdfWriter.insertPage(pdfPage, page_idx)
-                        print('Added page to PDF file: ' + prevPageName + ' - Page #: ' + str(i))
+                        print('Added page to PDF file: ' + str(prevPageName) + ' - Page #: ' + str(i))
                         page_idx+=1
 
 #                   pdfFileName = outputNamePrefix + str(str(prevPageName).replace(':','_')).replace('*','_') + '.pdf'
                     # I've added "/" as a character to replace, because, again, we're running on Linux
                     pdfFileName = outputNamePrefix + str(str(prevPageName).replace(':','_')).replace('*','_').replace('/',' ') + '.pdf'
-                    pdfOutputFile = open(outputPDFDir + pdfFileName, 'wb')
+                    pdfOutputFile = open(str(outputPDFDir) + str(pdfFileName), 'wb')
                     pdfWriter.write(pdfOutputFile)
                     pdfOutputFile.close()
                     print('Created PDF file: ' + outputPDFDir + pdfFileName)
@@ -169,7 +199,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("input", help="input PDF file")
     parser.add_argument("output", nargs="?", help="output directory for the split   files", default="./Output/")
-    parser.add_argument("prefix", nargs="?", help="split files' prefix", default="Split")
+    parser.add_argument("prefix", nargs="?", help="split files' prefix", default="")
     parser.add_argument("delete", nargs="?", help="delete the original file? (True/False)", default=False)
+    parser.add_argument("majorBookmarksOnly", nargs="?", help="Only output those chapters without - in the title", default=False)
     args = parser.parse_args()
-    main(args.input, args.output, args.prefix, args.delete)
+    main(args.input, args.output, args.prefix, args.delete, args.majorBookmarksOnly)
